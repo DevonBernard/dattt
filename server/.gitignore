@@ -1,0 +1,13 @@
+# server configurations
+alembic.ini
+config/development.py
+config/production.py
+.env.local
+
+# compilation
+*.pyc
+
+# development
+/flask_session
+/cache
+/env
