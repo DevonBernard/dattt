@@ -35,18 +35,16 @@ def get_tweet_id_from_string(text: str) -> (Optional[str], Optional[str]):
 
 def twitter_tweet(text: str):
     client = get_twitter_client()
-    resp = client.create_tweet(text=text)
-    return resp
+    return client.create_tweet(text=text)
 
 
 def twitter_retweet(tweet_id: str):
     client = get_twitter_client()
 
-    if not tweet_id or not re.search("^[0-9_]{1,20}$", tweet_id):
-        raise ValueError("Invalid tweet id")
+    if not tweet_id or not re.search('^[0-9_]{1,20}$', tweet_id):
+        raise ValueError('Invalid tweet id')
 
-    resp = client.retweet(tweet_id)
-    return resp
+    return client.retweet(tweet_id)
 
 
 def twitter_quotetweet(text: str):
@@ -57,7 +55,7 @@ def twitter_quotetweet(text: str):
         tweet_id, tweet_url = get_tweet_id_from_string(
             text_parts[len(text_parts)-1]
         )
-        if quote_text and tweet_id and re.search("^[0-9_]{1,20}$", tweet_id):
+        if quote_text and tweet_id and re.search('^[0-9_]{1,20}$', tweet_id):
             return client.create_tweet(
                 text=quote_text,
                 quote_tweet_id=tweet_id
@@ -73,8 +71,7 @@ def twitter_follow(username: str):
     if not user_resp or len(user_resp.errors) != 0 or not user_resp.data:
         raise ValueError(f'Unable to follow user: {username}')
 
-    resp = client.follow_user(target_user_id=user_resp.data['id'])
-    return resp
+    return client.follow_user(target_user_id=user_resp.data['id'])
 
 
 def twitter_unfollow(username: str):
@@ -85,8 +82,7 @@ def twitter_unfollow(username: str):
     if not user_resp or len(user_resp.errors) != 0 or not user_resp.data:
         raise ValueError(f'Unable to follow user: {username}')
 
-    resp = client.unfollow_user(target_user_id=user_resp.data['id'])
-    return resp
+    return client.unfollow_user(target_user_id=user_resp.data['id'])
 
 
 def perform_twitter_task(message: MessageJson) -> TaskResponse:
