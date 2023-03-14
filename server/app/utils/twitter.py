@@ -49,6 +49,22 @@ def twitter_retweet(tweet_id: str):
     return resp
 
 
+def twitter_quotetweet(text: str):
+    client = get_twitter_client()
+    text_parts = text.split(' ')
+    if len(text_parts) > 1:
+        quote_text = ' '.join(text_parts[:len(text_parts)-1])
+        tweet_id, tweet_url = get_tweet_id_from_string(
+            text_parts[len(text_parts)-1]
+        )
+        if quote_text and tweet_id and re.search("^[0-9_]{1,20}$", tweet_id):
+            return client.create_tweet(
+                text=quote_text,
+                quote_tweet_id=tweet_id
+            )
+    return None
+
+
 def twitter_follow(username: str):
     client = get_twitter_client()
 
@@ -91,6 +107,10 @@ def perform_twitter_task(message: MessageJson) -> TaskResponse:
     elif message['action'] == 'retweet':
         tweet_id, tweet_url = get_tweet_id_from_string(message['data'])
         resp = twitter_retweet(tweet_id)
+    elif message['action'] == 'quotetweet':
+        resp = twitter_quotetweet(message['data'])
+        if resp and len(resp.errors) == 0:
+            tweet_id = resp.data['id']
     elif message['action'] == 'follow':
         resp = twitter_follow(message['data'])
     elif message['action'] == 'unfollow':
