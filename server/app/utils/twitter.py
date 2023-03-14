@@ -49,6 +49,18 @@ def twitter_retweet(tweet_id: str):
     return resp
 
 
+def twitter_follow(username: str):
+    client = get_twitter_client()
+
+    user_resp = client.get_user(username=username, user_auth=True)
+
+    if not user_resp or len(user_resp.errors) != 0 or not user_resp.data:
+        raise ValueError(f'Unable to follow user: {username}')
+
+    resp = client.follow_user(target_user_id=user_resp.data['id'])
+    return resp
+
+
 def perform_twitter_task(message: MessageJson) -> TaskResponse:
     resp_data = {}
     if message['action'] == 'tweet':
@@ -67,6 +79,8 @@ def perform_twitter_task(message: MessageJson) -> TaskResponse:
     elif message['action'] == 'retweet':
         tweet_id, tweet_url = get_tweet_id_from_string(message['data'])
         resp = twitter_retweet(tweet_id)
+    elif message['action'] == 'follow':
+        resp = twitter_follow(message['data'])
     else:
         return TaskResponse(
             False,
