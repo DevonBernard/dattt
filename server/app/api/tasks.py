@@ -3,17 +3,19 @@ import json
 from flask import request, jsonify
 from app.api import api
 from app.utils.twitter import perform_twitter_task
+from app.utils.sol import verify_solana_memo_tx
 from app.typing.requests import MessageJson
 from app.typing.tasks import TaskResponse
 
 
 @api.route('/tasks', methods=['POST'])
 def submit_task():
-    message: MessageJson = request.json['message']
-    message_text: str = json.dumps(message, separators=(',', ':'))
     # TODO: verify walletAddress satisfies community eligibility criteria
+    user_wallet: str = request.json['wallet']
 
     # verify message content matches messageHash
+    message: MessageJson = request.json['message']
+    message_text: str = json.dumps(message, separators=(',', ':'))
     message_hash: str = request.json['messageHash']
     computed_message_hash = hashlib.sha256(
         message_text.encode('utf-8')
@@ -24,10 +26,18 @@ def submit_task():
             'errors': [f'Submitted hash does not match message']
         }), 400
 
-    # TODO: verify tx succeeded
-    # TODO: verify tx memo matches messageHash
-    # TODO: verify walletAddress is tx signer
+    # verify tx succeeded, wallet signed tx,
+    #     tx is memo, and memo matches message hash
+    tx_id: str = request.json['txId']
+    tx_error = verify_solana_memo_tx(tx_id, user_wallet, message_hash)
+    if tx_error:
+        return jsonify({
+            'success': False,
+            'errors': [tx_error]
+        }), 400
+
     # TODO: save task reference in database
+
     if message['module'] == 'twitter':
         task_response: TaskResponse = perform_twitter_task(message)
         return jsonify({
