@@ -8,10 +8,36 @@ from flask import current_app
 
 
 MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 
 
 def get_solana_client():
     return Client(current_app.config["SOLANA_RPC_ENDPOINT"])
+
+
+def is_user_wallet_qualified(user_wallet: str) -> bool:
+    if user_wallet in current_app.config["SOLANA_WALLET_WHITELIST"]:
+        return True
+
+    solana_client = get_solana_client()
+    user_pubkey = Pubkey.from_string(user_wallet)
+    token_program_id = Pubkey.from_string(TOKEN_PROGRAM_ID)
+
+    response = solana_client.get_token_accounts_by_owner_json_parsed(
+        user_pubkey, TokenAccountOpts(program_id=token_program_id))
+    response_json = json.loads(response.to_json())
+
+    required_balance = current_app.config["SOLANA_TOKEN_REQUIRED_BALANCE"]
+    token_mint_addresses = current_app.config["SOLANA_TOKEN_MINT_ADDRESSES"]
+
+    user_balance = 0
+    for token in response_json['result']['value']:
+        token_info = token['account']['data']['parsed']['info']
+        if token_info['mint'] in token_mint_addresses:
+            user_balance += token_info["tokenAmount"]["uiAmount"]
+        if user_balance >= required_balance:
+            return True
+    return False
 
 
 def verify_solana_memo_tx(

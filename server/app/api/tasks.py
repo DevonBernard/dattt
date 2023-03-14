@@ -3,15 +3,22 @@ import json
 from flask import request, jsonify
 from app.api import api
 from app.utils.twitter import perform_twitter_task
-from app.utils.sol import verify_solana_memo_tx
+from app.utils.sol import verify_solana_memo_tx, is_user_wallet_qualified
 from app.typing.requests import MessageJson
 from app.typing.tasks import TaskResponse
 
 
 @api.route('/tasks', methods=['POST'])
 def submit_task():
-    # TODO: verify walletAddress satisfies community eligibility criteria
+    # verify user wallet satisfies qualification criteria
     user_wallet: str = request.json['wallet']
+    if not is_user_wallet_qualified(user_wallet):
+        return jsonify({
+            'success': False,
+            'errors': [
+                'This wallet does not meet token balance requirement'
+            ]
+        }), 403
 
     # verify message content matches messageHash
     message: MessageJson = request.json['message']
