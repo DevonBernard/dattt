@@ -39,6 +39,16 @@ def twitter_tweet(text: str):
     return resp
 
 
+def twitter_retweet(tweet_id: str):
+    client = get_twitter_client()
+
+    if not tweet_id or not re.search("^[0-9_]{1,20}$", tweet_id):
+        raise ValueError("Invalid tweet id")
+
+    resp = client.retweet(tweet_id)
+    return resp
+
+
 def perform_twitter_task(message: MessageJson) -> TaskResponse:
     resp_data = {}
     if message['action'] == 'tweet':
@@ -54,6 +64,9 @@ def perform_twitter_task(message: MessageJson) -> TaskResponse:
             )
             resp_data['tweetId'] = tweet_id
             resp_data['tweetUrl'] = tweet_url
+    elif message['action'] == 'retweet':
+        tweet_id, tweet_url = get_tweet_id_from_string(message['data'])
+        resp = twitter_retweet(tweet_id)
     else:
         return TaskResponse(
             False,
