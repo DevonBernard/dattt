@@ -61,6 +61,18 @@ def twitter_follow(username: str):
     return resp
 
 
+def twitter_unfollow(username: str):
+    client = get_twitter_client()
+
+    user_resp = client.get_user(username=username, user_auth=True)
+
+    if not user_resp or len(user_resp.errors) != 0 or not user_resp.data:
+        raise ValueError(f'Unable to follow user: {username}')
+
+    resp = client.unfollow_user(target_user_id=user_resp.data['id'])
+    return resp
+
+
 def perform_twitter_task(message: MessageJson) -> TaskResponse:
     resp_data = {}
     if message['action'] == 'tweet':
@@ -81,6 +93,8 @@ def perform_twitter_task(message: MessageJson) -> TaskResponse:
         resp = twitter_retweet(tweet_id)
     elif message['action'] == 'follow':
         resp = twitter_follow(message['data'])
+    elif message['action'] == 'unfollow':
+        resp = twitter_unfollow(message['data'])
     else:
         return TaskResponse(
             False,
