@@ -1,3 +1,5 @@
+import hashlib
+import json
 from flask import request, jsonify
 from app.api import api
 from app.utils.twitter import perform_twitter_task
@@ -8,8 +10,20 @@ from app.typing.tasks import TaskResponse
 @api.route('/tasks', methods=['POST'])
 def submit_task():
     message: MessageJson = request.json['message']
+    message_text: str = json.dumps(message, separators=(',', ':'))
     # TODO: verify walletAddress satisfies community eligibility criteria
-    # TODO: verify message content matches messageHash
+
+    # verify message content matches messageHash
+    message_hash: str = request.json['messageHash']
+    computed_message_hash = hashlib.sha256(
+        message_text.encode('utf-8')
+    ).hexdigest()
+    if message_hash != computed_message_hash:
+        return jsonify({
+            'success': False,
+            'errors': [f'Submitted hash does not match message']
+        }), 400
+
     # TODO: verify tx succeeded
     # TODO: verify tx memo matches messageHash
     # TODO: verify walletAddress is tx signer
