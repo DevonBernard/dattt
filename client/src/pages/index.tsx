@@ -9,9 +9,11 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { toast } from 'react-toastify';
 import { WalletButton } from 'dattt/components/wallet';
 import { signMemo } from 'dattt/utils/sol';
 import { submitTask } from 'dattt/api/tasks';
+import { capitalizeText } from 'dattt/utils/text';
 
 
 const defaultFormState = {
@@ -36,13 +38,25 @@ export default function Home() {
     if (!publicKey || submitting) return;
     setForms({...forms, submitting: true});
 
-    const memoResp = await signMemo(connection, wallet, JSON.stringify(messageData));
+    const memoResp = await toast.promise(
+      signMemo(connection, wallet, JSON.stringify(messageData)),
+      {
+        pending: 'Waiting for finalized transaction',
+      });
     if (memoResp?.signature && memoResp?.memoHash) {
-      const taskResp = await submitTask(publicKey,  memoResp.signature, messageData, memoResp.memoHash);
+      const taskLabel = capitalizeText(messageData?.action);
+      const taskResp = await toast.promise(
+        submitTask(publicKey,  memoResp.signature, messageData, memoResp.memoHash),
+        {
+          pending: `${taskLabel}ing...`,
+          success: `${taskLabel} successful`,
+          error: `${taskLabel} failed`
+        }
+      );
       console.log("Task Response", taskResp);
     } else if (memoResp?.error) {
       // @ts-ignore
-      console.error(memoResp?.error?.message);
+      toast.error(memoResp?.error?.message);
     }
     setForms({...forms, submitting: false});
   }

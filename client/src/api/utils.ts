@@ -1,3 +1,5 @@
+import { toast } from 'react-toastify';
+
 export const apiCall = async (method: string, path: string, body={}) => {
   const payload: any = {
     method: method,
@@ -13,12 +15,12 @@ export const apiCall = async (method: string, path: string, body={}) => {
     const respJson = await response.json();
     if (response.status !== 200) {
       if (respJson?.errors) {
-        console.error(respJson.errors[0]);
+        toast.error(respJson.errors[0]);
       }
     }
     return {response, respJson};
   } catch (e) {
-    console.error("Failed to connect with API");
+    toast.error("Failed to connect with API");
     return {
       response: {},
       respJson: {}

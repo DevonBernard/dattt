@@ -1,7 +1,9 @@
 import 'dattt/styles/globals.css'
+import 'react-toastify/dist/ReactToastify.css';
 import type { AppProps } from 'next/app'
-import { SolanaWalletProvider } from 'dattt/components/wallet'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
+import { ToastContainer } from 'react-toastify'
+import { SolanaWalletProvider } from 'dattt/components/wallet'
 
 
 const theme = createTheme({
@@ -31,6 +33,16 @@ export default function App({ Component, pageProps }: AppProps) {
       <SolanaWalletProvider>
         <Component {...pageProps} />
       </SolanaWalletProvider>
+      <ToastContainer
+          theme="dark"
+          position="bottom-left"
+          autoClose={5000}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+        />
     </ThemeProvider>
   );
 }
