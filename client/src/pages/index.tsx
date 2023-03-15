@@ -48,9 +48,7 @@ export default function Home() {
       const taskResp = await toast.promise(
         submitTask(publicKey,  memoResp.signature, messageData, memoResp.memoHash),
         {
-          pending: `${taskLabel}ing...`,
-          success: `${taskLabel} successful`,
-          error: `${taskLabel} failed`
+          pending: `${taskLabel}ing...`
         }
       );
 
@@ -58,6 +56,7 @@ export default function Home() {
       let updatedForms = JSON.parse(JSON.stringify(forms)); // deep copy
       updatedForms.submitting = false;
       if (taskResp.success) {
+        toast.success(`${taskLabel} successful`);
         if (messageData.action === 'tweet') updatedForms.tweetText = '';
         if (messageData.action === 'retweet') updatedForms.retweetUrl = '';
         if (messageData.action === 'quotetweet') {
