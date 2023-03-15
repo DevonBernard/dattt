@@ -1,6 +1,7 @@
 import os
 import sys
 from flask import Flask
+from flask_cors import CORS
 from app.utils.env import load_dotenvs
 
 
@@ -20,6 +21,8 @@ def create_app():
         app.config.from_pyfile('../config/default.py')
     else:
         raise ValueError('Invalid configuration value.')
+
+    cors = CORS(app, supports_credentials=True)
 
     from . import api
     app.register_blueprint(api.api)
