@@ -53,12 +53,28 @@ export default function Home() {
           error: `${taskLabel} failed`
         }
       );
+
+      // clear related field after submission
+      let updatedForms = JSON.parse(JSON.stringify(forms)); // deep copy
+      updatedForms.submitting = false;
+      if (taskResp.success) {
+        if (messageData.action === 'tweet') updatedForms.tweetText = '';
+        if (messageData.action === 'retweet') updatedForms.retweetUrl = '';
+        if (messageData.action === 'quotetweet') {
+          updatedForms.retweetUrl = '';
+          updatedForms.retweetQuote = '';
+        }
+        if (messageData.action === 'follow') updatedForms.followUser = '';
+        if (messageData.action === 'unfollow') updatedForms.unfollowUser = '';
+      }
+
+      setForms(updatedForms);
       console.log("Task Response", taskResp);
     } else if (memoResp?.error) {
       // @ts-ignore
       toast.error(memoResp?.error?.message);
+      setForms({...forms, submitting: false});
     }
-    setForms({...forms, submitting: false});
   }
 
   return (
