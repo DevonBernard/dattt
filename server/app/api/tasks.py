@@ -12,11 +12,19 @@ from app.typing.tasks import TaskResponse
 def submit_task():
     # verify user wallet satisfies qualification criteria
     user_wallet: str = request.json['wallet']
-    if not is_user_wallet_qualified(user_wallet):
+    (
+        qualified,
+        user_balance,
+        required_balance
+    ) = is_user_wallet_qualified(user_wallet)
+    if not qualified:
         return jsonify({
             'success': False,
             'errors': [
-                'This wallet does not meet token balance requirement'
+                (
+                    f'This wallet only has {user_balance} tokens'
+                    f' ({required_balance} required)'
+                )
             ]
         }), 403
 

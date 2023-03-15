@@ -15,9 +15,9 @@ def get_solana_client():
     return Client(current_app.config["SOLANA_RPC_ENDPOINT"])
 
 
-def is_user_wallet_qualified(user_wallet: str) -> bool:
+def is_user_wallet_qualified(user_wallet: str) -> (bool, int, int):
     if user_wallet in current_app.config["SOLANA_WALLET_WHITELIST"]:
-        return True
+        return True, 0, 0
 
     solana_client = get_solana_client()
     user_pubkey = Pubkey.from_string(user_wallet)
@@ -36,8 +36,8 @@ def is_user_wallet_qualified(user_wallet: str) -> bool:
         if token_info['mint'] in token_mint_addresses:
             user_balance += token_info["tokenAmount"]["uiAmount"]
         if user_balance >= required_balance:
-            return True
-    return False
+            return True, user_balance, required_balance
+    return False, user_balance, required_balance
 
 
 def verify_solana_memo_tx(
